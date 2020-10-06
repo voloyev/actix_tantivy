@@ -6,7 +6,7 @@ edition = "2018"
 
 [dependencies]
 tempdir = "*"
-tantivy = "0.7.2"
+tantivy = "0.12.0"
 
 actix = "0.7"
 actix-web = "0.7"

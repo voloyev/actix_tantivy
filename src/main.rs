@@ -2,10 +2,11 @@ extern crate tempdir;
 
 #[macro_use]
 extern crate tantivy;
-use tantivy::collector::TopCollector;
+use tantivy::collector::TopDocs;
 use tantivy::query::QueryParser;
 use tantivy::schema::*;
 use tantivy::Index;
+use tantivy::ReloadPolicy;
 use tempdir::TempDir;
 
 extern crate actix;
@@ -128,21 +129,24 @@ fn tantivy(search: &String) -> (String, tantivy::Result<()>) {
     ));
 
     index_writer.commit().unwrap();
+    let reader = index
+        .reader_builder()
+        .reload_policy(ReloadPolicy::OnCommit)
+        .try_into()
+        .unwrap();
 
-    index.load_searchers().unwrap();
-
-    let searcher = index.searcher();
+    let searcher = reader.searcher();
 
     let query_parser = QueryParser::for_index(&index, vec![title, body]);
     let query = query_parser.parse_query(&search).unwrap();
-    let mut top_collector = TopCollector::with_limit(10);
+    let mut top_collector = TopDocs::with_limit(10);
 
     searcher.search(&*query, &mut top_collector).unwrap();
 
-    let doc_addresses = top_collector.docs();
-
+    let top_docs = searcher.search(&query, &TopDocs::with_limit(10)).unwrap();
     let mut output = String::from("");
-    for doc_address in doc_addresses {
+
+    for (_score, doc_address) in top_docs {
         let retrieved_doc = searcher.doc(doc_address).unwrap();
         output += schema.to_json(&retrieved_doc).as_str();
     }

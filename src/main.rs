@@ -1,24 +1,21 @@
 extern crate tempdir;
 
-#[macro_use]
-extern crate tantivy;
 use tantivy::collector::TopDocs;
+use tantivy::doc;
 use tantivy::query::QueryParser;
 use tantivy::schema::*;
 use tantivy::Index;
 use tantivy::ReloadPolicy;
 use tempdir::TempDir;
 
-extern crate actix;
-extern crate actix_web;
-extern crate env_logger;
+use actix;
+use actix_web;
+use env_logger;
 
 #[macro_use]
 extern crate serde_derive;
 
-use actix_web::{
-    http, middleware::Logger, server, App, Form, HttpRequest, HttpResponse, Result, State,
-};
+use actix_web::{http, middleware::Logger, server, App, Form, HttpRequest, HttpResponse, Result};
 
 struct AppState {
     search: String,
